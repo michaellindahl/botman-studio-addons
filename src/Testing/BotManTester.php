@@ -26,7 +26,7 @@ class BotManTester
     /** @var FakeDriver */
     private $driver;
 
-    /** @var Callable */
+    /** @var Closure|string */
     private $listener;
 
     /** @var array */
@@ -43,9 +43,9 @@ class BotManTester
      *
      * @param BotMan $bot
      * @param FakeDriver $driver
-     * @param Callable $listener The Controller method that contains the BotMan logic and listens for incoming requests.
+     * @param Closure|string $listener the logic to setup Botman including middleware. Either a closure or a Class@method notation
      */
-    public function __construct(BotMan $bot, FakeDriver $driver, Callable $listener)
+    public function __construct(BotMan $bot, FakeDriver $driver, $listener)
     {
         $this->bot = $bot;
         $this->driver = $driver;
@@ -54,9 +54,22 @@ class BotManTester
 
     protected function listen()
     {
-        [$class, $method] = explode('@', $this->handler);
-        $command = new $class();
-        call_user_func([$command, $method]);
+        if (is_callable($this->listener)) {
+            call_user_func($this->listener);
+        } elseif (strpos($this->listener, '@') === false) {
+            if (! method_exists($this->listener, '__invoke')) {
+                throw new UnexpectedValueException(sprintf(
+                    'BotManTester listener: [%s]', $this->listener
+                ));
+            }
+
+            call_user_func($this->listener.'@__invoke');
+        } else {
+            [$class, $method] = explode('@', $this->listener);
+            $command = new $class();
+            call_user_func([$command, $method]);
+        }
+        
         $this->driver->isInteractiveMessageReply = false;
     }
 
