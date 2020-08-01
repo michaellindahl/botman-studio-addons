@@ -140,11 +140,12 @@ class BotManTester
     /**
      * @param $latitude
      * @param $longitude
+     * @param $payload
      * @return $this
      */
-    public function receivesLocation($latitude = 24, $longitude = 57)
+    public function receivesLocation($latitude = 24, $longitude = 57, $payload = null)
     {
-        $message = new IncomingMessage(Location::PATTERN, $this->user_id, $this->channel);
+        $message = new IncomingMessage(Location::PATTERN, $this->user_id, $this->channel, $payload);
         $message->setLocation(new Location($latitude, $longitude, null));
 
         return $this->receivesRaw($message);
