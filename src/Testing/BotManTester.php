@@ -26,6 +26,9 @@ class BotManTester
     /** @var FakeDriver */
     private $driver;
 
+    /** @var Callable */
+    private $listener;
+
     /** @var array */
     private $botMessages = [];
 
@@ -40,16 +43,20 @@ class BotManTester
      *
      * @param BotMan $bot
      * @param FakeDriver $driver
+     * @param Callable $listener The Controller method that contains the BotMan logic and listens for incoming requests.
      */
-    public function __construct(BotMan $bot, FakeDriver $driver)
+    public function __construct(BotMan $bot, FakeDriver $driver, Callable $listener)
     {
         $this->bot = $bot;
         $this->driver = $driver;
+        $this->listener = $listener;
     }
 
     protected function listen()
     {
-        $this->bot->listen();
+        [$class, $method] = explode('@', $this->handler);
+        $command = new $class();
+        call_user_func([$command, $method]);
         $this->driver->isInteractiveMessageReply = false;
     }
 
