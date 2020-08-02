@@ -276,6 +276,22 @@ class BotManTester
     }
 
     /**
+     * @param String $string
+     * @return $this
+     */
+    public function assertReplyContainsString($string)
+    {
+        $reply = $this->getReply();
+        if ($reply instanceof OutgoingMessage) {
+            PHPUnit::assertStringContainsString($string, $reply->getText());
+        } else {
+            PHPUnit::assertStringContainsString($string, $reply);
+        }
+
+        return $this;
+    }
+
+    /**
      * Assert that there are specific multiple replies.
      *
      * @param array $expectedMessages
